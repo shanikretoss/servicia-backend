@@ -58,14 +58,16 @@ model Membership {
 }
 
 model Company {
-  id        String   @id @default(uuid())
-  name      String
-  slug      String   @unique
-  status    String
-  createdBy String?  @map("created_by")
-  createdAt DateTime @default(now()) @map("created_at")
-  updatedAt DateTime @updatedAt @map("updated_at")
+  id             String   @id @default(uuid())
+  name           String
+  slug           String   @unique
+  status         String
+  createdBy      String?  @map("created_by")
+  organizationId String?  @map("organization_id")
+  createdAt      DateTime @default(now()) @map("created_at")
+  updatedAt      DateTime @updatedAt @map("updated_at")
 
+  organization      Organization? @relation(fields: [organizationId], references: [id], onDelete: Cascade)
   memberships       Membership[]
   auditLogs         AuditLog[]
   connectedAccounts ConnectedAccount[]
@@ -166,6 +168,8 @@ model Organization {
   slug      String   @unique
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")
+
+  companies Company[]
 
   @@map("organizations")
 }

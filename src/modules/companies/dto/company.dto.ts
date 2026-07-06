@@ -16,6 +16,9 @@ export class CompanyDto {
   @ApiProperty({ description: 'The creator user UUID' })
   createdBy!: string | null;
 
+  @ApiProperty({ description: 'The organization UUID associated with the company' })
+  organizationId!: string | null;
+
   @ApiProperty({ description: 'The creation timestamp' })
   createdAt!: Date;
 

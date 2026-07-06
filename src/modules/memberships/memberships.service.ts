@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
+import { Injectable, NotFoundException, BadRequestException, Inject, forwardRef } from '@nestjs/common';
 import { MembershipsRepository } from './repositories/memberships.repository';
 import { CreateMembershipDto } from './dto/create-membership.dto';
 import { MembershipDto } from './dto/membership.dto';
@@ -11,6 +11,7 @@ export class MembershipsService {
   constructor(
     private readonly membershipsRepository: MembershipsRepository,
     private readonly usersService: UsersService,
+    @Inject(forwardRef(() => CompaniesService))
     private readonly companiesService: CompaniesService,
     private readonly rolesService: RolesService,
   ) {}

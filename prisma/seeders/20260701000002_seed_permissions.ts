@@ -17,6 +17,9 @@ export async function up(prisma: PrismaClient): Promise<void> {
     { module: 'membership', action: 'read' },
     { module: 'membership', action: 'update' },
     { module: 'membership', action: 'delete' },
+    { module: 'organization', action: 'create' },
+    { module: 'organization', action: 'read' },
+    { module: 'organization', action: 'update' },
   ];
 
   for (const permData of permissions) {

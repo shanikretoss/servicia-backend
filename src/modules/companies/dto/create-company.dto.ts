@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsNotEmpty, IsOptional, IsString } from 'class-validator';
+import { IsNotEmpty, IsOptional, IsString, IsUUID } from 'class-validator';
 
 export class CreateCompanyDto {
   @ApiProperty({ description: 'The name of the company' })
@@ -21,4 +21,9 @@ export class CreateCompanyDto {
   @IsString()
   @IsOptional()
   createdBy!: string;
+
+  @ApiProperty({ description: 'The organization UUID associated with the company' })
+  @IsUUID()
+  @IsOptional()
+  organizationId?: string;
 }

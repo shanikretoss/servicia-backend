@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Param, NotFoundException } from '@nestjs/common';
+import { Controller, Get, Post, Body, Param } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiResponse } from '@nestjs/swagger';
 import { CompaniesService } from './companies.service';
 import { CreateCompanyDto } from './dto/create-company.dto';
@@ -28,10 +28,6 @@ export class CompaniesController {
   @ApiResponse({ status: 200, description: 'Found record', type: CompanyDto })
   @ApiResponse({ status: 404, description: 'Record not found' })
   async findOne(@Param('id') id: string): Promise<CompanyDto> {
-    const item = await this.companyService.findOne(id);
-    if (!item) {
-      throw new NotFoundException('Company not found');
-    }
-    return item;
+    return this.companyService.findOne(id);
   }
 }

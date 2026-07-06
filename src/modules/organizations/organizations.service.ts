@@ -1,12 +1,18 @@
-import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
+import { Injectable, NotFoundException, BadRequestException, Inject, forwardRef } from '@nestjs/common';
 import { OrganizationsRepository } from './repositories/organizations.repository';
 import { CreateOrganizationDto } from './dto/create-organization.dto';
 import { UpdateOrganizationDto } from './dto/update-organization.dto';
 import { OrganizationDto } from './dto/organization.dto';
+import { CompaniesService } from '../companies/companies.service';
+import { CompanyDto } from '../companies/dto/company.dto';
 
 @Injectable()
 export class OrganizationsService {
-  constructor(private readonly organizationsRepository: OrganizationsRepository) {}
+  constructor(
+    private readonly organizationsRepository: OrganizationsRepository,
+    @Inject(forwardRef(() => CompaniesService))
+    private readonly companiesService: CompaniesService,
+  ) {}
 
   /**
    * Get all organizations
@@ -75,5 +81,16 @@ export class OrganizationsService {
     }
 
     return this.organizationsRepository.update(id, input);
+  }
+
+  /**
+   * Find all companies belonging to an organization
+   */
+  async findCompanies(organizationId: string): Promise<CompanyDto[]> {
+    // Validate organization exists
+    await this.findOne(organizationId);
+
+    // Fetch and return companies
+    return this.companiesService.findByOrganizationId(organizationId);
   }
 }
