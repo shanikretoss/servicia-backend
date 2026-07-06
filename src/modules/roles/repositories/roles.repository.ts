@@ -23,6 +23,31 @@ export class RolesRepository {
   }
 
   /**
+   * Find a role by its slug
+   */
+  async findBySlug(slug: string): Promise<Role | null> {
+    return this.prisma.role.findUnique({
+      where: { slug },
+    });
+  }
+
+  /**
+   * Find a role with all its permissions included
+   */
+  async findWithPermissions(id: string) {
+    return this.prisma.role.findUnique({
+      where: { id },
+      include: {
+        rolePermissions: {
+          include: {
+            permission: true,
+          },
+        },
+      },
+    });
+  }
+
+  /**
    * Create a new role
    */
   async create(data: Prisma.RoleCreateInput): Promise<Role> {

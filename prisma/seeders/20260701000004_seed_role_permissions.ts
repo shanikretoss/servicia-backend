@@ -45,5 +45,13 @@ export async function up(prisma: PrismaClient): Promise<void> {
     await linkRolePermission(memberRole.id, perm.id);
   }
 
+  // Also assign specific permissions for membership read to Member role
+  const membershipReadPerm = allPermissions.find(
+    (perm) => perm.module === 'membership' && perm.action === 'read',
+  );
+  if (membershipReadPerm) {
+    await linkRolePermission(memberRole.id, membershipReadPerm.id);
+  }
+
   console.log('✅ Finished Seeding Role Permissions');
 }

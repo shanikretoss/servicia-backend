@@ -23,6 +23,15 @@ export class PermissionsRepository {
   }
 
   /**
+   * Find a permission by module and action
+   */
+  async findByModuleAction(module: string, action: string): Promise<Permission | null> {
+    return this.prisma.permission.findUnique({
+      where: { module_action: { module, action } },
+    });
+  }
+
+  /**
    * Create a new permission
    */
   async create(data: Prisma.PermissionCreateInput): Promise<Permission> {

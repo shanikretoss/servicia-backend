@@ -10,6 +10,7 @@ import { UsersModule } from './modules/users/users.module';
 import { CompaniesModule } from './modules/companies/companies.module';
 import { RolesModule } from './modules/roles/roles.module';
 import { PermissionsModule } from './modules/permissions/permissions.module';
+import { MembershipsModule } from './modules/memberships/memberships.module';
 import { HealthModule } from './modules/health/health.module';
 
 @Module({
@@ -29,8 +30,10 @@ import { HealthModule } from './modules/health/health.module';
     CompaniesModule,
     RolesModule,
     PermissionsModule,
+    MembershipsModule,
     HealthModule,
   ],
   providers: [],
 })
 export class AppModule {}
+
