@@ -2,6 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { UsersRepository } from './repositories/users.repository';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UserDto } from './dto/user.dto';
+import { User } from '@prisma/client';
 
 @Injectable()
 export class UsersService {
@@ -16,6 +17,10 @@ export class UsersService {
   }
 
   async findByEmail(email: string): Promise<UserDto | null> {
+    return this.usersRepository.findByEmail(email);
+  }
+
+  async findByEmailWithPassword(email: string): Promise<User | null> {
     return this.usersRepository.findByEmail(email);
   }
 

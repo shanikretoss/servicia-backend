@@ -63,8 +63,8 @@ export class AuthService {
    * Authenticate a user and return access token
    */
   async login(loginDto: LoginDto): Promise<any> {
-    // 1. Find user by email
-    const user = await this.usersService.findByEmail(loginDto.email);
+    // 1. Find user by email (including password hash for verification)
+    const user = await this.usersService.findByEmailWithPassword(loginDto.email);
     if (!user) {
       throw AuthErrors.invalidCredentials();
     }
