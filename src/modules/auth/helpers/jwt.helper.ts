@@ -39,4 +39,14 @@ export class JwtHelper {
   async verifyToken(token: string): Promise<any> {
     return this.jwtService.verifyAsync(token);
   }
+
+  /**
+   * Verify a refresh token using the refresh secret
+   * @param token Refresh token string
+   * @returns Decoded payload
+   */
+  async verifyRefreshToken(token: string): Promise<any> {
+    const secret = this.configService.get<string>('auth.jwt.refreshSecret') || 'fallback_refresh_secret_key_change_me_in_prod';
+    return this.jwtService.verifyAsync(token, { secret });
+  }
 }

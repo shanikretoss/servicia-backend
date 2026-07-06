@@ -1,10 +1,13 @@
 import { Injectable, NotImplementedException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { UsersService } from '../users/users.service';
+import { UserDto } from '../users/dto/user.dto';
 import { PasswordHelper } from './helpers/password.helper';
 import { JwtHelper } from './helpers/jwt.helper';
+import { RefreshTokenService } from './services/refresh-token.service';
 import { RegisterDto } from './dto/register.dto';
 import { LoginDto } from './dto/login.dto';
+import { RefreshDto } from './dto/refresh.dto';
 import { buildLoginResponse, AuthErrors } from './helpers/auth-response.helper';
 
 @Injectable()
@@ -13,6 +16,7 @@ export class AuthService {
     private readonly usersService: UsersService,
     private readonly passwordHelper: PasswordHelper,
     private readonly jwtHelper: JwtHelper,
+    private readonly refreshTokenService: RefreshTokenService,
     private readonly configService: ConfigService,
   ) {}
 
@@ -88,6 +92,9 @@ export class AuthService {
       email: user.email,
     });
 
+    // Store refresh token in the database using RefreshTokenService
+    await this.refreshTokenService.storeRefreshToken(user.id, refreshToken);
+
     // 4. Build and return standardized response
     const tokens = {
       accessToken,
@@ -107,18 +114,72 @@ export class AuthService {
 
   /**
    * Refresh the access token using a valid refresh token
-   * (Placeholder for refresh token milestone)
    */
-  async refreshToken(refreshToken: string): Promise<any> {
-    throw new NotImplementedException('Token refresh logic is not implemented.');
+  async refreshToken(refreshDto: RefreshDto): Promise<any> {
+    const { refreshToken } = refreshDto;
+
+    // 1. Verify JWT signature and expiration
+    let payload: any;
+    try {
+      payload = await this.jwtHelper.verifyRefreshToken(refreshToken);
+    } catch (e) {
+      throw AuthErrors.invalidOrExpiredToken();
+    }
+
+    // 2. Find the user
+    const user = await this.usersService.findOne(payload.sub);
+    if (!user) {
+      throw AuthErrors.invalidOrExpiredToken();
+    }
+
+    // 3. Generate new access token
+    const newAccessToken = await this.jwtHelper.generateAccessToken({
+      sub: user.id,
+      email: user.email,
+    });
+
+    // 4. Rotate Refresh Token: generate new one
+    const newRefreshToken = await this.jwtHelper.generateRefreshToken({
+      sub: user.id,
+      email: user.email,
+    });
+
+    // 5. Rotate the token record in the database using RefreshTokenService
+    await this.refreshTokenService.rotateRefreshToken(refreshToken, newRefreshToken, user.id);
+
+    // 6. Return new token pair
+    const tokens = {
+      accessToken: newAccessToken,
+      refreshToken: newRefreshToken,
+      tokenType: 'Bearer',
+    };
+
+    const userPayload = {
+      id: user.id,
+      email: user.email,
+      firstName: user.firstName,
+      lastName: user.lastName,
+    };
+
+    return buildLoginResponse(userPayload, tokens, 'Token refreshed successfully');
+  }
+
+  /**
+   * Get the profile details of the authenticated user
+   */
+  async getProfile(userId: string): Promise<UserDto> {
+    const user = await this.usersService.findOne(userId);
+    if (!user) {
+      throw AuthErrors.userNotFound();
+    }
+    return user;
   }
 
   /**
    * Log out a user and invalidate their session/tokens
-   * (Placeholder for logout milestone)
    */
   async logout(userId: string): Promise<void> {
-    throw new NotImplementedException('Logout logic is not implemented.');
+    await this.refreshTokenService.revokeAllForUser(userId);
   }
 
   /**

@@ -6,6 +6,9 @@ import { JwtStrategy } from './jwt.strategy';
 import { AuthService } from './auth.service';
 import { PasswordHelper } from './helpers/password.helper';
 import { JwtHelper } from './helpers/jwt.helper';
+import { RefreshTokenHelper } from './helpers/refresh-token.helper';
+import { UserRefreshTokensRepository } from './repositories/user-refresh-tokens.repository';
+import { RefreshTokenService } from './services/refresh-token.service';
 import { AuthController } from './auth.controller';
 import { UsersModule } from '../users/users.module';
 
@@ -24,7 +27,7 @@ import { UsersModule } from '../users/users.module';
     }),
   ],
   controllers: [AuthController],
-  providers: [JwtStrategy, AuthService, PasswordHelper, JwtHelper],
-  exports: [AuthService, PasswordHelper, JwtHelper],
+  providers: [JwtStrategy, AuthService, PasswordHelper, JwtHelper, RefreshTokenHelper, UserRefreshTokensRepository, RefreshTokenService],
+  exports: [AuthService, PasswordHelper, JwtHelper, RefreshTokenHelper, UserRefreshTokensRepository, RefreshTokenService],
 })
 export class AuthModule {}
