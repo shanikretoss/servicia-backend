@@ -5,6 +5,7 @@ import { MembershipDto } from './dto/membership.dto';
 import { UsersService } from '../users/users.service';
 import { CompaniesService } from '../companies/companies.service';
 import { RolesService } from '../roles/roles.service';
+import { OrganizationsService } from '../organizations/organizations.service';
 
 @Injectable()
 export class MembershipsService {
@@ -14,6 +15,8 @@ export class MembershipsService {
     @Inject(forwardRef(() => CompaniesService))
     private readonly companiesService: CompaniesService,
     private readonly rolesService: RolesService,
+    @Inject(forwardRef(() => OrganizationsService))
+    private readonly organizationsService: OrganizationsService,
   ) {}
 
   /**
@@ -49,16 +52,16 @@ export class MembershipsService {
    */
   async create(input: CreateMembershipDto): Promise<MembershipDto> {
     // Validate User exists
-    const user = await this.usersService.findOne(input.userId);
-    if (!user) {
-      throw new NotFoundException('User not found');
-    }
+    await this.validateUserExists(input.userId);
 
-    // Validate Company exists
+    // Validate Company exists (throws NotFoundException internally)
     const company = await this.companiesService.findOne(input.companyId);
-    if (!company) {
-      throw new NotFoundException('Company not found');
+
+    // Validate Organization exists through the Company relationship (throws NotFoundException internally)
+    if (!company.organizationId) {
+      throw new BadRequestException('Company does not belong to an Organization');
     }
+    await this.organizationsService.findOne(company.organizationId);
 
     // Validate Role exists
     await this.validateRoleExists(input.roleId);
@@ -79,7 +82,17 @@ export class MembershipsService {
     id: string,
     data: Partial<Pick<CreateMembershipDto, 'roleId' | 'status'>>,
   ): Promise<MembershipDto> {
-    await this.findAndValidateMembership(id);
+    const existing = await this.findAndValidateMembership(id);
+
+    const ownerRole = await this.rolesService.findBySlug('owner');
+
+    // Prevent changing the last Owner to another role
+    if (data.roleId && ownerRole && data.roleId !== ownerRole.id) {
+      const isLast = await this.isLastRemainingOwner(existing);
+      if (isLast) {
+        throw new BadRequestException('Cannot change the role of the last remaining Owner');
+      }
+    }
 
     if (data.roleId) {
       await this.validateRoleExists(data.roleId);
@@ -92,7 +105,13 @@ export class MembershipsService {
    * Remove a membership
    */
   async remove(id: string): Promise<void> {
-    await this.findAndValidateMembership(id);
+    const existing = await this.findAndValidateMembership(id);
+
+    const isLast = await this.isLastRemainingOwner(existing);
+    if (isLast) {
+      throw new BadRequestException('Cannot remove the last remaining Owner of the company');
+    }
+
     await this.membershipsRepository.delete(id);
   }
 
@@ -108,6 +127,16 @@ export class MembershipsService {
   }
 
   /**
+   * Helper to validate that a user exists
+   */
+  private async validateUserExists(userId: string): Promise<void> {
+    const user = await this.usersService.findOne(userId);
+    if (!user) {
+      throw new NotFoundException('User not found');
+    }
+  }
+
+  /**
    * Helper to validate that a role exists
    */
   private async validateRoleExists(roleId: string): Promise<void> {
@@ -115,5 +144,28 @@ export class MembershipsService {
     if (!role) {
       throw new NotFoundException('Role not found');
     }
+  }
+
+  /**
+   * Check if a membership is the last remaining owner in its company
+   */
+  private async isLastRemainingOwner(membership: MembershipDto): Promise<boolean> {
+    const ownerRole = await this.rolesService.findBySlug('owner');
+    if (!ownerRole) {
+      return false;
+    }
+
+    // Check if the membership itself has the Owner role
+    if (membership.roleId !== ownerRole.id) {
+      return false;
+    }
+
+    // Fetch all memberships of the company
+    const companyMemberships = await this.membershipsRepository.findByCompanyId(membership.companyId);
+
+    // Count how many have the Owner role
+    const owners = companyMemberships.filter((m) => m.roleId === ownerRole.id);
+
+    return owners.length <= 1;
   }
 }

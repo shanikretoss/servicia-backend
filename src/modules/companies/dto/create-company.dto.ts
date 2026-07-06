@@ -24,6 +24,6 @@ export class CreateCompanyDto {
 
   @ApiProperty({ description: 'The organization UUID associated with the company' })
   @IsUUID()
-  @IsOptional()
-  organizationId?: string;
+  @IsNotEmpty()
+  organizationId!: string;
 }

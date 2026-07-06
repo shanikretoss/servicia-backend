@@ -25,6 +25,15 @@ export class OrganizationsRepository {
   }
 
   /**
+   * Find an organization by its owner ID
+   */
+  async findByOwnerId(ownerId: string): Promise<Organization | null> {
+    return this.prisma.organization.findUnique({
+      where: { ownerId },
+    });
+  }
+
+  /**
    * Find an organization by its name
    */
   async findByName(name: string): Promise<Organization | null> {
@@ -43,7 +52,7 @@ export class OrganizationsRepository {
   /**
    * Create a new organization
    */
-  async create(data: Prisma.OrganizationCreateInput): Promise<Organization> {
+  async create(data: Prisma.OrganizationUncheckedCreateInput): Promise<Organization> {
     return this.prisma.organization.create({
       data,
     });
@@ -52,7 +61,7 @@ export class OrganizationsRepository {
   /**
    * Update an existing organization
    */
-  async update(id: string, data: Prisma.OrganizationUpdateInput): Promise<Organization> {
+  async update(id: string, data: Prisma.OrganizationUncheckedUpdateInput): Promise<Organization> {
     return this.prisma.organization.update({
       where: { id },
       data,

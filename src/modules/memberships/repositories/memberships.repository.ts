@@ -25,6 +25,15 @@ export class MembershipsRepository {
   }
 
   /**
+   * Find all memberships in a specific company
+   */
+  async findByCompanyId(companyId: string): Promise<Membership[]> {
+    return this.prisma.membership.findMany({
+      where: { companyId },
+    });
+  }
+
+  /**
    * Find all memberships with optional company ID filtering
    */
   async findAll(filter?: { companyId?: string }): Promise<Membership[]> {

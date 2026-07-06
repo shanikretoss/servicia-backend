@@ -1,8 +1,10 @@
-import { Controller, Get, Post, Body, Param } from '@nestjs/common';
-import { ApiTags, ApiOperation, ApiResponse } from '@nestjs/swagger';
+import { Controller, Get, Post, Body, Param, UseGuards } from '@nestjs/common';
+import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth } from '@nestjs/swagger';
 import { CompaniesService } from './companies.service';
 import { CreateCompanyDto } from './dto/create-company.dto';
 import { CompanyDto } from './dto/company.dto';
+import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
+import { CurrentUser } from '../../common/decorators/current-user.decorator';
 
 @ApiTags('Companies')
 @Controller('companies')
@@ -10,10 +12,15 @@ export class CompaniesController {
   constructor(private readonly companyService: CompaniesService) {}
 
   @Post()
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
   @ApiOperation({ summary: 'Create a new company' })
   @ApiResponse({ status: 201, description: 'Created successfully', type: CompanyDto })
-  async create(@Body() input: CreateCompanyDto): Promise<CompanyDto> {
-    return this.companyService.create(input);
+  async create(
+    @Body() input: CreateCompanyDto,
+    @CurrentUser() user: any,
+  ): Promise<CompanyDto> {
+    return this.companyService.create(input, user.userId);
   }
 
   @Get()

@@ -17,9 +17,10 @@ model User {
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")
 
-  memberships   Membership[]
-  auditLogs     AuditLog[]
-  refreshTokens UserRefreshToken[]
+  memberships       Membership[]
+  auditLogs         AuditLog[]
+  refreshTokens     UserRefreshToken[]
+  ownedOrganization Organization?
 
   @@map("users")
 }
@@ -166,9 +167,11 @@ model Organization {
   id        String   @id @default(uuid())
   name      String
   slug      String   @unique
+  ownerId   String?  @unique @map("owner_id")
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")
 
+  owner     User?     @relation(fields: [ownerId], references: [id], onDelete: Cascade)
   companies Company[]
 
   @@map("organizations")

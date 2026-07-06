@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException, BadRequestException, Inject, forwardRef } from '@nestjs/common';
+import { Injectable, NotFoundException, BadRequestException, ConflictException, Inject, forwardRef } from '@nestjs/common';
 import { OrganizationsRepository } from './repositories/organizations.repository';
 import { CreateOrganizationDto } from './dto/create-organization.dto';
 import { UpdateOrganizationDto } from './dto/update-organization.dto';
@@ -40,9 +40,19 @@ export class OrganizationsService {
   }
 
   /**
+   * Find an organization by owner ID
+   */
+  async findByOwnerId(ownerId: string): Promise<OrganizationDto | null> {
+    return this.organizationsRepository.findByOwnerId(ownerId);
+  }
+
+  /**
    * Create a new organization
    */
-  async create(input: CreateOrganizationDto): Promise<OrganizationDto> {
+  async create(input: CreateOrganizationDto, ownerId: string): Promise<OrganizationDto> {
+    // Validate that the user doesn't already own an Organization
+    await this.validateUserDoesNotOwnOrganization(ownerId);
+
     // Validate uniqueness of the name
     const existingName = await this.organizationsRepository.findByName(input.name);
     if (existingName) {
@@ -54,7 +64,11 @@ export class OrganizationsService {
     if (existingSlug) {
       throw new BadRequestException('Organization with this slug already exists');
     }
-    return this.organizationsRepository.create(input);
+
+    return this.organizationsRepository.create({
+      ...input,
+      ownerId,
+    });
   }
 
   /**
@@ -92,5 +106,15 @@ export class OrganizationsService {
 
     // Fetch and return companies
     return this.companiesService.findByOrganizationId(organizationId);
+  }
+
+  /**
+   * Validate that a user does not already own an organization
+   */
+  private async validateUserDoesNotOwnOrganization(ownerId: string): Promise<void> {
+    const org = await this.organizationsRepository.findByOwnerId(ownerId);
+    if (org) {
+      throw new ConflictException('User already owns an Organization');
+    }
   }
 }
