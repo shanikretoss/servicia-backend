@@ -31,3 +31,5 @@ export class PermissionsRepository {
     });
   }
 }
+
+export { PermissionsRepository as PermissionRepository };

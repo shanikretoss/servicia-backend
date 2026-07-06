@@ -31,3 +31,5 @@ export class RolesRepository {
     });
   }
 }
+
+export { RolesRepository as RoleRepository };
