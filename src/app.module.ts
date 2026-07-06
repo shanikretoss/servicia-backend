@@ -12,6 +12,7 @@ import { RolesModule } from './modules/roles/roles.module';
 import { PermissionsModule } from './modules/permissions/permissions.module';
 import { MembershipsModule } from './modules/memberships/memberships.module';
 import { OrganizationsModule } from './modules/organizations/organizations.module';
+import { TenantModule } from './modules/tenant/tenant.module';
 import { HealthModule } from './modules/health/health.module';
 
 @Module({
@@ -33,6 +34,7 @@ import { HealthModule } from './modules/health/health.module';
     PermissionsModule,
     MembershipsModule,
     OrganizationsModule,
+    TenantModule,
     HealthModule,
   ],
   providers: [],

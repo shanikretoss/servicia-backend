@@ -6,13 +6,15 @@ import { UsersModule } from '../users/users.module';
 import { CompaniesModule } from '../companies/companies.module';
 import { RolesModule } from '../roles/roles.module';
 import { OrganizationsModule } from '../organizations/organizations.module';
+import { TenantModule } from '../tenant/tenant.module';
 
 @Module({
   imports: [
-    UsersModule,
+    forwardRef(() => UsersModule),
     forwardRef(() => CompaniesModule),
     RolesModule,
     forwardRef(() => OrganizationsModule),
+    forwardRef(() => TenantModule),
   ],
   controllers: [MembershipsController],
   providers: [MembershipsService, MembershipsRepository],

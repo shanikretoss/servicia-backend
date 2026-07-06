@@ -1,4 +1,4 @@
-import { Injectable, Inject, forwardRef, NotFoundException } from '@nestjs/common';
+import { Injectable, Inject, forwardRef, NotFoundException, ForbiddenException } from '@nestjs/common';
 import { CompaniesRepository } from './repositories/companies.repository';
 import { CreateCompanyDto } from './dto/create-company.dto';
 import { CompanyDto } from './dto/company.dto';
@@ -17,15 +17,37 @@ export class CompaniesService {
     private readonly membershipsService: MembershipsService,
   ) {}
 
-  async findAll(): Promise<CompanyDto[]> {
-    return this.companiesRepository.findAll();
+  async findAll(userId?: string): Promise<CompanyDto[]> {
+    if (!userId) {
+      return this.companiesRepository.findAll();
+    }
+
+    // Fetch user memberships
+    const userMemberships = await this.membershipsService.findByUserId(userId);
+    const activeCompanyIds = userMemberships
+      .filter((m) => m.status === 'active')
+      .map((m) => m.companyId);
+
+    if (activeCompanyIds.length === 0) {
+      return [];
+    }
+
+    return this.companiesRepository.findByIds(activeCompanyIds);
   }
 
-  async findOne(id: string): Promise<CompanyDto> {
+  async findOne(id: string, userId?: string): Promise<CompanyDto> {
     const item = await this.companiesRepository.findById(id);
     if (!item) {
       throw new NotFoundException('Company not found');
     }
+
+    if (userId) {
+      const membership = await this.membershipsService.findByUserAndCompany(userId, id);
+      if (!membership || membership.status !== 'active') {
+        throw new ForbiddenException('You do not have access to this company');
+      }
+    }
+
     return item;
   }
 

@@ -23,6 +23,17 @@ export class CompaniesRepository {
   }
 
   /**
+   * Find companies by a list of IDs
+   */
+  async findByIds(ids: string[]): Promise<Company[]> {
+    return this.prisma.company.findMany({
+      where: {
+        id: { in: ids },
+      },
+    });
+  }
+
+  /**
    * Find all companies belonging to a specific organization
    */
   async findByOrganizationId(organizationId: string): Promise<Company[]> {

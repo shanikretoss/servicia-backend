@@ -24,17 +24,24 @@ export class CompaniesController {
   }
 
   @Get()
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
   @ApiOperation({ summary: 'Get all companies' })
   @ApiResponse({ status: 200, description: 'List of companies', type: [CompanyDto] })
-  async findAll(): Promise<CompanyDto[]> {
-    return this.companyService.findAll();
+  async findAll(@CurrentUser() user: any): Promise<CompanyDto[]> {
+    return this.companyService.findAll(user.userId);
   }
 
   @Get(':id')
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
   @ApiOperation({ summary: 'Get a company by ID' })
   @ApiResponse({ status: 200, description: 'Found record', type: CompanyDto })
   @ApiResponse({ status: 404, description: 'Record not found' })
-  async findOne(@Param('id') id: string): Promise<CompanyDto> {
-    return this.companyService.findOne(id);
+  async findOne(
+    @Param('id') id: string,
+    @CurrentUser() user: any,
+  ): Promise<CompanyDto> {
+    return this.companyService.findOne(id, user.userId);
   }
 }

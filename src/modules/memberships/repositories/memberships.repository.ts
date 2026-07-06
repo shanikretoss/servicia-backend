@@ -7,11 +7,16 @@ export class MembershipsRepository {
   constructor(private readonly prisma: PrismaService) {}
 
   /**
-   * Find a membership by its ID
+   * Find a membership by its ID with optional company filtering
    */
-  async findById(id: string): Promise<Membership | null> {
-    return this.prisma.membership.findUnique({
-      where: { id },
+  async findById(id: string, companyId?: string): Promise<Membership | null> {
+    if (!companyId) {
+      return this.prisma.membership.findUnique({
+        where: { id },
+      });
+    }
+    return this.prisma.membership.findFirst({
+      where: { id, companyId },
     });
   }
 

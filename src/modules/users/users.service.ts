@@ -8,12 +8,12 @@ import { User } from '@prisma/client';
 export class UsersService {
   constructor(private readonly usersRepository: UsersRepository) {}
 
-  async findAll(): Promise<UserDto[]> {
-    return this.usersRepository.findAll();
+  async findAll(companyId?: string): Promise<UserDto[]> {
+    return this.usersRepository.findAll(companyId);
   }
 
-  async findOne(id: string): Promise<UserDto | null> {
-    return this.usersRepository.findById(id);
+  async findOne(id: string, companyId?: string): Promise<UserDto | null> {
+    return this.usersRepository.findById(id, companyId);
   }
 
   async findByEmail(email: string): Promise<UserDto | null> {

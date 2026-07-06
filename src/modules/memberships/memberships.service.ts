@@ -29,15 +29,15 @@ export class MembershipsService {
   /**
    * Find all memberships with optional filtering
    */
-  async findAll(filter?: { companyId?: string }): Promise<MembershipDto[]> {
-    return this.membershipsRepository.findAll(filter);
+  async findAll(companyId: string): Promise<MembershipDto[]> {
+    return this.membershipsRepository.findAll({ companyId });
   }
 
   /**
    * Find a specific membership by ID
    */
-  async findOne(id: string): Promise<MembershipDto> {
-    return this.findAndValidateMembership(id);
+  async findOne(id: string, companyId: string): Promise<MembershipDto> {
+    return this.findAndValidateMembership(id, companyId);
   }
 
   /**
@@ -81,8 +81,9 @@ export class MembershipsService {
   async update(
     id: string,
     data: Partial<Pick<CreateMembershipDto, 'roleId' | 'status'>>,
+    companyId: string,
   ): Promise<MembershipDto> {
-    const existing = await this.findAndValidateMembership(id);
+    const existing = await this.findAndValidateMembership(id, companyId);
 
     const ownerRole = await this.rolesService.findBySlug('owner');
 
@@ -104,8 +105,8 @@ export class MembershipsService {
   /**
    * Remove a membership
    */
-  async remove(id: string): Promise<void> {
-    const existing = await this.findAndValidateMembership(id);
+  async remove(id: string, companyId: string): Promise<void> {
+    const existing = await this.findAndValidateMembership(id, companyId);
 
     const isLast = await this.isLastRemainingOwner(existing);
     if (isLast) {
@@ -118,8 +119,8 @@ export class MembershipsService {
   /**
    * Helper to retrieve a membership and validate its existence
    */
-  private async findAndValidateMembership(id: string): Promise<MembershipDto> {
-    const membership = await this.membershipsRepository.findById(id);
+  private async findAndValidateMembership(id: string, companyId: string): Promise<MembershipDto> {
+    const membership = await this.membershipsRepository.findById(id, companyId);
     if (!membership) {
       throw new NotFoundException('Membership not found');
     }

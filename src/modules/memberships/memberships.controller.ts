@@ -18,6 +18,8 @@ import { UpdateMembershipDto } from './dto/update-membership.dto';
 import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
 import { PermissionGuard } from '../../common/guards/permission.guard';
 import { RequirePermissions } from '../../common/decorators/require-permissions.decorator';
+import { CompanyContextGuard } from '../tenant/guards/company-context.guard';
+import { CurrentCompany } from '../tenant/decorators/current-company.decorator';
 
 @ApiTags('Memberships')
 @ApiBearerAuth()
@@ -26,7 +28,7 @@ import { RequirePermissions } from '../../common/decorators/require-permissions.
   required: true,
   description: 'Company context UUID required for permission validation',
 })
-@UseGuards(JwtAuthGuard, PermissionGuard)
+@UseGuards(JwtAuthGuard, CompanyContextGuard, PermissionGuard)
 @Controller('memberships')
 export class MembershipsController {
   constructor(private readonly membershipsService: MembershipsService) {}
@@ -67,8 +69,8 @@ export class MembershipsController {
     status: 403,
     description: 'Forbidden context or insufficient permission',
   })
-  async findAll(@Query() query: QueryMembershipsDto): Promise<MembershipDto[]> {
-    return this.membershipsService.findAll(query);
+  async findAll(@CurrentCompany() company: any): Promise<MembershipDto[]> {
+    return this.membershipsService.findAll(company.id);
   }
 
   @Get(':id')
@@ -84,8 +86,11 @@ export class MembershipsController {
     description: 'Forbidden context or insufficient permission',
   })
   @ApiResponse({ status: 404, description: 'Membership not found' })
-  async findOne(@Param('id') id: string): Promise<MembershipDto> {
-    return this.membershipsService.findOne(id);
+  async findOne(
+    @Param('id') id: string,
+    @CurrentCompany() company: any,
+  ): Promise<MembershipDto> {
+    return this.membershipsService.findOne(id, company.id);
   }
 
   @Patch(':id')
@@ -107,8 +112,9 @@ export class MembershipsController {
   async update(
     @Param('id') id: string,
     @Body() input: UpdateMembershipDto,
+    @CurrentCompany() company: any,
   ): Promise<MembershipDto> {
-    return this.membershipsService.update(id, input);
+    return this.membershipsService.update(id, input, company.id);
   }
 
   @Delete(':id')
@@ -120,7 +126,10 @@ export class MembershipsController {
     description: 'Forbidden context or insufficient permission',
   })
   @ApiResponse({ status: 404, description: 'Membership not found' })
-  async remove(@Param('id') id: string): Promise<void> {
-    return this.membershipsService.remove(id);
+  async remove(
+    @Param('id') id: string,
+    @CurrentCompany() company: any,
+  ): Promise<void> {
+    return this.membershipsService.remove(id, company.id);
   }
 }

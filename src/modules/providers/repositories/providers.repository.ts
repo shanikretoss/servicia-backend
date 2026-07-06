@@ -7,19 +7,38 @@ export class ProvidersRepository {
   constructor(private readonly prisma: PrismaService) {}
 
   /**
-   * Find a provider by its unique ID
+   * Find a provider by its unique ID with optional company filtering
    */
-  async findById(id: string): Promise<Provider | null> {
-    return this.prisma.provider.findUnique({
-      where: { id },
+  async findById(id: string, companyId?: string): Promise<Provider | null> {
+    if (!companyId) {
+      return this.prisma.provider.findUnique({
+        where: { id },
+      });
+    }
+    return this.prisma.provider.findFirst({
+      where: {
+        id,
+        connectedAccounts: {
+          some: { companyId },
+        },
+      },
     });
   }
 
   /**
-   * Find all providers
+   * Find all providers with optional company filtering
    */
-  async findAll(): Promise<Provider[]> {
-    return this.prisma.provider.findMany();
+  async findAll(companyId?: string): Promise<Provider[]> {
+    if (!companyId) {
+      return this.prisma.provider.findMany();
+    }
+    return this.prisma.provider.findMany({
+      where: {
+        connectedAccounts: {
+          some: { companyId },
+        },
+      },
+    });
   }
 
   /**

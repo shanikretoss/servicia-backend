@@ -7,12 +7,12 @@ import { ProviderDto } from './dto/provider.dto';
 export class ProvidersService {
   constructor(private readonly providersRepository: ProvidersRepository) {}
 
-  async findAll(): Promise<ProviderDto[]> {
-    return this.providersRepository.findAll();
+  async findAll(companyId?: string): Promise<ProviderDto[]> {
+    return this.providersRepository.findAll(companyId);
   }
 
-  async findOne(id: string): Promise<ProviderDto | null> {
-    return this.providersRepository.findById(id);
+  async findOne(id: string, companyId?: string): Promise<ProviderDto | null> {
+    return this.providersRepository.findById(id, companyId);
   }
 
   async create(input: CreateProviderDto): Promise<ProviderDto> {

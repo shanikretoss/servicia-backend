@@ -7,11 +7,21 @@ export class UsersRepository {
   constructor(private readonly prisma: PrismaService) {}
 
   /**
-   * Find a user by their unique ID
+   * Find a user by their unique ID with optional company filtering
    */
-  async findById(id: string): Promise<User | null> {
-    return this.prisma.user.findUnique({
-      where: { id },
+  async findById(id: string, companyId?: string): Promise<User | null> {
+    if (!companyId) {
+      return this.prisma.user.findUnique({
+        where: { id },
+      });
+    }
+    return this.prisma.user.findFirst({
+      where: {
+        id,
+        memberships: {
+          some: { companyId },
+        },
+      },
     });
   }
 
@@ -44,9 +54,18 @@ export class UsersRepository {
   }
 
   /**
-   * Find all users in the database
+   * Find all users in the database with optional company filtering
    */
-  async findAll(): Promise<User[]> {
-    return this.prisma.user.findMany();
+  async findAll(companyId?: string): Promise<User[]> {
+    if (!companyId) {
+      return this.prisma.user.findMany();
+    }
+    return this.prisma.user.findMany({
+      where: {
+        memberships: {
+          some: { companyId },
+        },
+      },
+    });
   }
 }
