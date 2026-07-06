@@ -78,8 +78,12 @@ export class AuthService {
       throw AuthErrors.invalidCredentials();
     }
 
-    // 3. Generate access token
+    // 3. Generate access and refresh tokens
     const accessToken = await this.jwtHelper.generateAccessToken({
+      sub: user.id,
+      email: user.email,
+    });
+    const refreshToken = await this.jwtHelper.generateRefreshToken({
       sub: user.id,
       email: user.email,
     });
@@ -87,6 +91,7 @@ export class AuthService {
     // 4. Build and return standardized response
     const tokens = {
       accessToken,
+      refreshToken,
       tokenType: 'Bearer',
     };
 
