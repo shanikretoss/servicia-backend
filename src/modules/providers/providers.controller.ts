@@ -1,8 +1,8 @@
 import { Controller, Get, Post, Body, Param, NotFoundException } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiResponse } from '@nestjs/swagger';
 import { ProvidersService } from './providers.service';
-import { CreateProviderDto } from './create-provider.dto';
-import { ProviderDto } from './provider.dto';
+import { CreateProviderDto } from './dto/create-provider.dto';
+import { ProviderDto } from './dto/provider.dto';
 
 @ApiTags('Providers')
 @Controller('providers')

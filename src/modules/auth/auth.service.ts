@@ -1,28 +1,103 @@
 import { Injectable, NotImplementedException } from '@nestjs/common';
-import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
+import { UsersService } from '../users/users.service';
+import { PasswordHelper } from './helpers/password.helper';
+import { JwtHelper } from './helpers/jwt.helper';
+import { RegisterDto } from './dto/register.dto';
+import { LoginDto } from './dto/login.dto';
+import { buildLoginResponse, AuthErrors } from './helpers/auth-response.helper';
 
 @Injectable()
 export class AuthService {
   constructor(
-    private readonly jwtService: JwtService,
+    private readonly usersService: UsersService,
+    private readonly passwordHelper: PasswordHelper,
+    private readonly jwtHelper: JwtHelper,
     private readonly configService: ConfigService,
   ) {}
 
   /**
    * Register a new user
-   * (Placeholder for register milestone)
    */
-  async register(registerDto: any): Promise<any> {
-    throw new NotImplementedException('Registration logic is not implemented.');
+  async register(registerDto: RegisterDto): Promise<any> {
+    // 1. Check if email already exists
+    const existingUser = await this.usersService.findByEmail(registerDto.email);
+    if (existingUser) {
+      throw AuthErrors.emailAlreadyExists();
+    }
+
+    // 2. Hash password
+    const hashedPassword = await this.passwordHelper.hashPassword(registerDto.password);
+
+    // 3. Create user in the database
+    const user = await this.usersService.create({
+      firstName: registerDto.firstName,
+      lastName: registerDto.lastName,
+      email: registerDto.email,
+      password: hashedPassword,
+    });
+
+    // 4. Generate access token
+    const accessToken = await this.jwtHelper.generateAccessToken({
+      sub: user.id,
+      email: user.email,
+    });
+
+    // 5. Build and return standardized response
+    const tokens = {
+      accessToken,
+      tokenType: 'Bearer',
+    };
+
+    const userPayload = {
+      id: user.id,
+      email: user.email,
+      firstName: user.firstName,
+      lastName: user.lastName,
+    };
+
+    return buildLoginResponse(userPayload, tokens, 'User registered successfully');
   }
 
   /**
-   * Authenticate a user and return access/refresh tokens
-   * (Placeholder for login milestone)
+   * Authenticate a user and return access token
    */
-  async login(loginDto: any): Promise<any> {
-    throw new NotImplementedException('Login logic is not implemented.');
+  async login(loginDto: LoginDto): Promise<any> {
+    // 1. Find user by email
+    const user = await this.usersService.findByEmail(loginDto.email);
+    if (!user) {
+      throw AuthErrors.invalidCredentials();
+    }
+
+    // 2. Compare password
+    const isPasswordValid = await this.passwordHelper.comparePassword(
+      loginDto.password,
+      user.password,
+    );
+    if (!isPasswordValid) {
+      throw AuthErrors.invalidCredentials();
+    }
+
+    // 3. Generate access token
+    const accessToken = await this.jwtHelper.generateAccessToken({
+      sub: user.id,
+      email: user.email,
+    });
+
+    // 4. Build and return standardized response
+    const tokens = {
+      accessToken,
+      tokenType: 'Bearer',
+    };
+
+    const userPayload = {
+      id: user.id,
+      email: user.email,
+      firstName: user.firstName,
+      lastName: user.lastName,
+    };
+
+    return buildLoginResponse(userPayload, tokens, 'Login successful');
   }
 
   /**

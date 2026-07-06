@@ -1,21 +1,21 @@
 import { Injectable } from '@nestjs/common';
-import { PrismaService } from '../../database/prisma.service';
-import { CreateRoleDto } from './create-role.dto';
-import { RoleDto } from './role.dto';
+import { RolesRepository } from './repositories/roles.repository';
+import { CreateRoleDto } from './dto/create-role.dto';
+import { RoleDto } from './dto/role.dto';
 
 @Injectable()
 export class RolesService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(private readonly rolesRepository: RolesRepository) {}
 
   async findAll(): Promise<RoleDto[]> {
-    return this.prisma.role.findMany();
+    return this.rolesRepository.findAll();
   }
 
   async findOne(id: string): Promise<RoleDto | null> {
-    return this.prisma.role.findUnique({ where: { id } });
+    return this.rolesRepository.findById(id);
   }
 
   async create(input: CreateRoleDto): Promise<RoleDto> {
-    return this.prisma.role.create({ data: input });
+    return this.rolesRepository.create(input);
   }
 }

@@ -1,8 +1,8 @@
 import { Controller, Get, Post, Body, Param, NotFoundException } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiResponse } from '@nestjs/swagger';
 import { CompaniesService } from './companies.service';
-import { CreateCompanyDto } from './create-company.dto';
-import { CompanyDto } from './company.dto';
+import { CreateCompanyDto } from './dto/create-company.dto';
+import { CompanyDto } from './dto/company.dto';
 
 @ApiTags('Companies')
 @Controller('companies')

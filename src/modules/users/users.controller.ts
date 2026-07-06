@@ -1,8 +1,8 @@
 import { Controller, Get, Post, Body, Param, NotFoundException } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiResponse } from '@nestjs/swagger';
 import { UsersService } from './users.service';
-import { CreateUserDto } from './create-user.dto';
-import { UserDto } from './user.dto';
+import { CreateUserDto } from './dto/create-user.dto';
+import { UserDto } from './dto/user.dto';
 
 @ApiTags('Users')
 @Controller('users')

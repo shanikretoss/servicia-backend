@@ -1,21 +1,21 @@
 import { Injectable } from '@nestjs/common';
-import { PrismaService } from '../../database/prisma.service';
-import { CreatePermissionDto } from './create-permission.dto';
-import { PermissionDto } from './permission.dto';
+import { PermissionsRepository } from './repositories/permissions.repository';
+import { CreatePermissionDto } from './dto/create-permission.dto';
+import { PermissionDto } from './dto/permission.dto';
 
 @Injectable()
 export class PermissionsService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(private readonly permissionsRepository: PermissionsRepository) {}
 
   async findAll(): Promise<PermissionDto[]> {
-    return this.prisma.permission.findMany();
+    return this.permissionsRepository.findAll();
   }
 
   async findOne(id: string): Promise<PermissionDto | null> {
-    return this.prisma.permission.findUnique({ where: { id } });
+    return this.permissionsRepository.findById(id);
   }
 
   async create(input: CreatePermissionDto): Promise<PermissionDto> {
-    return this.prisma.permission.create({ data: input });
+    return this.permissionsRepository.create(input);
   }
 }

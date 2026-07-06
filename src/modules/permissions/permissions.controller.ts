@@ -1,8 +1,8 @@
 import { Controller, Get, Post, Body, Param, NotFoundException } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiResponse } from '@nestjs/swagger';
 import { PermissionsService } from './permissions.service';
-import { CreatePermissionDto } from './create-permission.dto';
-import { PermissionDto } from './permission.dto';
+import { CreatePermissionDto } from './dto/create-permission.dto';
+import { PermissionDto } from './dto/permission.dto';
 
 @ApiTags('Permissions')
 @Controller('permissions')
