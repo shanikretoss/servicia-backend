@@ -38,10 +38,10 @@ async function bootstrap() {
   app.setGlobalPrefix(apiPrefix);
 
   // Configure REST URI Versioning (e.g. /api/v1/...)
-  app.enableVersioning({
-    type: VersioningType.URI,
-    defaultVersion: '1',
-  });
+  // app.enableVersioning({
+  //   type: VersioningType.URI,
+  //   defaultVersion: '1',
+  // });
 
   // Global Validation Pipe
   app.useGlobalPipes(
