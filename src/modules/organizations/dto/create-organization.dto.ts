@@ -6,9 +6,4 @@ export class CreateOrganizationDto {
   @IsString()
   @IsNotEmpty()
   name!: string;
-
-  @ApiProperty({ description: 'The unique slug of the organization' })
-  @IsString()
-  @IsNotEmpty()
-  slug!: string;
 }

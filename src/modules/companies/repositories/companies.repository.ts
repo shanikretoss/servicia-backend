@@ -43,9 +43,18 @@ export class CompaniesRepository {
   }
 
   /**
+   * Find a company by its unique slug
+   */
+  async findBySlug(slug: string): Promise<Company | null> {
+    return this.prisma.company.findUnique({
+      where: { slug },
+    });
+  }
+
+  /**
    * Create a new company
    */
-  async create(data: Prisma.CompanyCreateInput): Promise<Company> {
+  async create(data: Prisma.CompanyUncheckedCreateInput): Promise<Company> {
     return this.prisma.company.create({
       data,
     });

@@ -6,9 +6,4 @@ export class UpdateOrganizationDto {
   @IsString()
   @IsOptional()
   name?: string;
-
-  @ApiPropertyOptional({ description: 'The unique slug of the organization' })
-  @IsString()
-  @IsOptional()
-  slug?: string;
 }

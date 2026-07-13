@@ -5,6 +5,7 @@ import { UpdateOrganizationDto } from './dto/update-organization.dto';
 import { OrganizationDto } from './dto/organization.dto';
 import { CompaniesService } from '../companies/companies.service';
 import { CompanyDto } from '../companies/dto/company.dto';
+import { slugify } from '../../common/utils/slug.util';
 
 @Injectable()
 export class OrganizationsService {
@@ -25,11 +26,11 @@ export class OrganizationsService {
    * Get an organization by ID
    */
   async findOne(id: string): Promise<OrganizationDto> {
-    const org = await this.organizationsRepository.findById(id);
-    if (!org) {
+    const item = await this.organizationsRepository.findById(id);
+    if (!item) {
       throw new NotFoundException('Organization not found');
     }
-    return org;
+    return item;
   }
 
   /**
@@ -53,20 +54,22 @@ export class OrganizationsService {
     // Validate that the user doesn't already own an Organization
     await this.validateUserDoesNotOwnOrganization(ownerId);
 
-    // Validate uniqueness of the name
-    const existingName = await this.organizationsRepository.findByName(input.name);
-    if (existingName) {
-      throw new BadRequestException('Organization with this name already exists');
-    }
-
-    // Validate uniqueness of the slug
-    const existingSlug = await this.organizationsRepository.findBySlug(input.slug);
-    if (existingSlug) {
-      throw new BadRequestException('Organization with this slug already exists');
+    // Generate unique slug
+    let baseSlug = slugify(input.name);
+    let slug = baseSlug;
+    let counter = 1;
+    while (true) {
+      const existing = await this.organizationsRepository.findBySlug(slug);
+      if (!existing) {
+        break;
+      }
+      counter++;
+      slug = `${baseSlug}-${counter}`;
     }
 
     return this.organizationsRepository.create({
       ...input,
+      slug,
       ownerId,
     });
   }
@@ -78,20 +81,6 @@ export class OrganizationsService {
     const org = await this.organizationsRepository.findById(id);
     if (!org) {
       throw new NotFoundException('Organization not found');
-    }
-
-    if (input.name && input.name !== org.name) {
-      const existingName = await this.organizationsRepository.findByName(input.name);
-      if (existingName) {
-        throw new BadRequestException('Organization with this name already exists');
-      }
-    }
-
-    if (input.slug && input.slug !== org.slug) {
-      const existingSlug = await this.organizationsRepository.findBySlug(input.slug);
-      if (existingSlug) {
-        throw new BadRequestException('Organization with this slug already exists');
-      }
     }
 
     return this.organizationsRepository.update(id, input);

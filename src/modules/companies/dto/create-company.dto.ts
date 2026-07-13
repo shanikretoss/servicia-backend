@@ -7,11 +7,6 @@ export class CreateCompanyDto {
   @IsNotEmpty()
   name!: string;
 
-  @ApiProperty({ description: 'The slug of the company' })
-  @IsString()
-  @IsNotEmpty()
-  slug!: string;
-
   @ApiProperty({ description: 'The status of the company' })
   @IsString()
   @IsNotEmpty()
@@ -21,9 +16,4 @@ export class CreateCompanyDto {
   @IsString()
   @IsOptional()
   createdBy!: string;
-
-  @ApiProperty({ description: 'The organization UUID associated with the company' })
-  @IsUUID()
-  @IsNotEmpty()
-  organizationId!: string;
 }

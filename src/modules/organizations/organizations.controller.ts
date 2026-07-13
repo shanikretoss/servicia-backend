@@ -32,7 +32,7 @@ export class OrganizationsController {
   })
   @ApiResponse({
     status: 400,
-    description: 'Bad request or duplicate name/slug',
+    description: 'Bad request',
   })
   @ApiResponse({
     status: 409,
@@ -89,7 +89,7 @@ export class OrganizationsController {
   })
   @ApiResponse({
     status: 400,
-    description: 'Bad request or duplicate name/slug',
+    description: 'Bad request',
   })
   @ApiResponse({ status: 404, description: 'Organization not found' })
   async update(

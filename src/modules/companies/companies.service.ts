@@ -1,10 +1,11 @@
-import { Injectable, Inject, forwardRef, NotFoundException, ForbiddenException } from '@nestjs/common';
+import { Injectable, Inject, forwardRef, NotFoundException, ForbiddenException, BadRequestException } from '@nestjs/common';
 import { CompaniesRepository } from './repositories/companies.repository';
 import { CreateCompanyDto } from './dto/create-company.dto';
 import { CompanyDto } from './dto/company.dto';
 import { OrganizationsService } from '../organizations/organizations.service';
 import { RolesService } from '../roles/roles.service';
 import { MembershipsService } from '../memberships/memberships.service';
+import { slugify } from '../../common/utils/slug.util';
 
 @Injectable()
 export class CompaniesService {
@@ -56,17 +57,43 @@ export class CompaniesService {
   }
 
   async create(input: CreateCompanyDto, userId?: string): Promise<CompanyDto> {
-    // Validate Organization exists
-    await this.organizationsService.findOne(input.organizationId);
+    if (!userId) {
+      throw new BadRequestException('User context is required to create a company');
+    }
+
+    // Find the Organization owned by the authenticated user
+    const organization = await this.organizationsService.findByOwnerId(userId);
+    if (!organization) {
+      throw new NotFoundException('Organization not found for the current user');
+    }
+
+    const organizationId = organization.id;
+
+    // Generate unique slug for the company
+    let baseSlug = slugify(input.name);
+    let slug = baseSlug;
+    let counter = 1;
+    while (true) {
+      const existing = await this.companiesRepository.findBySlug(slug);
+      if (!existing) {
+        break;
+      }
+      counter++;
+      slug = `${baseSlug}-${counter}`;
+    }
 
     // Check if this is the first company in this organization
-    const existingCompanies = await this.companiesRepository.findByOrganizationId(input.organizationId);
+    const existingCompanies = await this.companiesRepository.findByOrganizationId(organizationId);
 
     // Create the company
-    const company = await this.companiesRepository.create(input);
+    const company = await this.companiesRepository.create({
+      ...input,
+      slug,
+      organizationId,
+    });
 
-    // If it's the first company of the organization and userId is provided, create Owner membership
-    if (existingCompanies.length === 0 && userId) {
+    // If it's the first company of the organization, create Owner membership
+    if (existingCompanies.length === 0) {
       const ownerRole = await this.rolesService.findBySlug('owner');
       if (ownerRole) {
         await this.membershipsService.create({
